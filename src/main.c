@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "SDL.h"
+#include "glad/glad.h"
 
 int main(void)
 {
@@ -14,7 +15,11 @@ int main(void)
 	SDL_GetVersion(&ver);
 	printf("Using SDL v%d.%d.%d\n", ver.major, ver.minor, ver.patch);
 
-	SDL_Window* window = SDL_CreateWindow("Unnamed C Jam Project", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_SHOWN);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+
+	SDL_Window* window = SDL_CreateWindow("Unnamed C Jam Project", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
 	if (window == NULL)
 	{
 		printf("Failed to create SDL Window: %s\n", SDL_GetError());
@@ -22,23 +27,31 @@ int main(void)
 		return EXIT_FAILURE;
 	}
 
-	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-	if (renderer == NULL)
+	SDL_GLContext gl_context = SDL_GL_CreateContext(window);
+	if (gl_context == NULL)
 	{
-		printf("Failed to create SDL Renderer: %s\n", SDL_GetError());
+		printf("Failed to create SDL GL Context: %s\n", SDL_GetError());
 		SDL_DestroyWindow(window);
 		SDL_Quit();
 		return EXIT_FAILURE;
 	}
 
+	if (!gladLoadGLLoader(SDL_GL_GetProcAddress))
+	{
+		printf("Failed to load OpenGL 3.3 Core\n");
+		SDL_GL_DeleteContext(gl_context);
+		SDL_DestroyWindow(window);
+		SDL_Quit();
+		return EXIT_FAILURE;
+	}
+
+	GLuint vbo;
+	glGenBuffers(1, &vbo);
+	printf("%d\n", vbo);
+	glDeleteBuffers(1, &vbo);
+
 	unsigned char running = 1;
 	SDL_Event event;
-	SDL_Rect rect = {
-		.x=100,
-		.y=100,
-		.w=100,
-		.h=100
-	};
 	while (running)
 	{
 		while (SDL_PollEvent(&event))
@@ -50,14 +63,13 @@ int main(void)
 			}
 		}
 
-		SDL_SetRenderDrawColor(renderer, 100, 149, 237, 255);
-		SDL_RenderClear(renderer);
-		SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-		SDL_RenderFillRect(renderer, &rect);
-		SDL_RenderPresent(renderer);
+		glClearColor(0.1f, 0.5f, 0.9f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		SDL_GL_SwapWindow(window);
 	}
 
-	SDL_DestroyRenderer(renderer);
+	SDL_GL_DeleteContext(gl_context);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
 	

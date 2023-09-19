@@ -5,35 +5,9 @@
 
 #include "image.h"
 
-const char* glsl_vertex_source = R"glsl(
-#version 330
+const char* glsl_vertex_source = "";
 
-in vec2 position;
-in vec2 vTexCoords;
-
-out vec2 fTexCoords;
-
-void main()
-{
-    fTexCoords = vTexCoords;
-    gl_Position = vec4(position, 0.0, 1.0);
-}
-)glsl";
-
-const char* glsl_fragment_source = R"glsl(
-#version 330
-
-in vec2 fTexCoords;
-
-out vec4 fragColor;
-
-uniform sampler2D tex;
-
-void main()
-{
-    fragColor = texture(tex, fTexCoords) * vec4(1.0, 0.0, 0.0, 1.0);
-}
-)glsl";
+const char* glsl_fragment_source = "";
 
 void check_shader_compilation_status(GLuint shader)
 {

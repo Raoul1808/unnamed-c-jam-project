@@ -3,8 +3,7 @@
 #include "SDL.h"
 #include "glad/glad.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include "image.h"
 
 const char* glsl_vertex_source = R"glsl(
 #version 330
@@ -130,10 +129,9 @@ int main(void)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    int img_w, img_h, img_c;
-    unsigned char* pixels = stbi_load("res/tux.png", &img_w, &img_h, &img_c, STBI_rgb_alpha);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img_w, img_h, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-    stbi_image_free(pixels);
+    Image* img = load_image_from_file("res/tux.png");
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img->w, img->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img->data);
+    free_image(img);
 
     GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex_shader, 1, &glsl_vertex_source, NULL);

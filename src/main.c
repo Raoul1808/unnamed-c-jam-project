@@ -3,13 +3,20 @@
 #include "SDL.h"
 #include "glad/glad.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 const char* glsl_vertex_source = R"glsl(
 #version 330
 
 in vec2 position;
+in vec2 vTexCoords;
+
+out vec2 fTexCoords;
 
 void main()
 {
+    fTexCoords = vTexCoords;
     gl_Position = vec4(position, 0.0, 1.0);
 }
 )glsl";
@@ -17,11 +24,15 @@ void main()
 const char* glsl_fragment_source = R"glsl(
 #version 330
 
+in vec2 fTexCoords;
+
 out vec4 fragColor;
+
+uniform sampler2D tex;
 
 void main()
 {
-    fragColor = vec4(1.0, 0.0, 0.0, 1.0);
+    fragColor = texture(tex, fTexCoords) * vec4(1.0, 0.0, 0.0, 1.0);
 }
 )glsl";
 
@@ -87,10 +98,10 @@ int main(void)
     glBindVertexArray(vao);
 
     float vertices[] = {
-            -0.5f, 0.5f, // Top left
-            0.5f, 0.5f, // Top right
-            0.5f, -0.5f, // Bottom right
-            -0.5f, -0.5f, // Bottom left
+            -0.5f, 0.5f, 0.0f, 0.0f, // Top left
+            0.5f, 0.5f, 1.0f, 0.0f, // Top right
+            0.5f, -0.5f, 1.0f, 1.0f, // Bottom right
+            -0.5f, -0.5f, 0.0f, 1.0f, // Bottom left
     };
 
     unsigned int indices[] = {
@@ -107,6 +118,22 @@ int main(void)
     glGenBuffers(1, &ibo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    GLuint tex;
+    glGenTextures(1, &tex);
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    int img_w, img_h, img_c;
+    unsigned char* pixels = stbi_load("res/tux.png", &img_w, &img_h, &img_c, STBI_rgb_alpha);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img_w, img_h, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    stbi_image_free(pixels);
 
     GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex_shader, 1, &glsl_vertex_source, NULL);
@@ -127,7 +154,11 @@ int main(void)
     GLint position_attrib_location = glGetAttribLocation(program, "position");
     glBindFragDataLocation(program, 0, "fragColor");
     glEnableVertexAttribArray(position_attrib_location);
-    glVertexAttribPointer(position_attrib_location, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(position_attrib_location, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, 0);
+
+    GLint texcoord_attrib_location = glGetAttribLocation(program, "vTexCoords");
+    glEnableVertexAttribArray(texcoord_attrib_location);
+    glVertexAttribPointer(texcoord_attrib_location, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, (void*)(sizeof(float) * 2));
 
     unsigned char running = 1;
     SDL_Event event;
@@ -153,6 +184,7 @@ int main(void)
     glDeleteProgram(program);
     glDeleteShader(fragment_shader);
     glDeleteShader(vertex_shader);
+    glDeleteTextures(1, &tex);
     glDeleteBuffers(1, &ibo);
     glDeleteBuffers(1, &vbo);
     glDeleteVertexArrays(1, &vao);

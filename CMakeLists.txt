@@ -6,5 +6,9 @@ set(CMAKE_C_STANDARD 11)
 add_subdirectory(external/SDL)
 add_subdirectory(glad)
 
+include_directories(external/stb)
+
 add_executable(unnamed_c_jam_project src/main.c)
-target_link_libraries(unnamed_c_jam_project SDL2main SDL2 ${CMAKE_DL_LIBS} glad)
+target_link_libraries(unnamed_c_jam_project SDL2main SDL2 ${CMAKE_DL_LIBS} glad m)
+
+file(COPY res DESTINATION ${CMAKE_BINARY_DIR})

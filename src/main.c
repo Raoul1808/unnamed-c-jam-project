@@ -24,12 +24,12 @@ void check_shader_compilation_status(GLuint shader)
 GLuint create_shader(char* shader_path, GLenum shader_type)
 {
     // TODO: ugly warnings over here
-    char* glsl_source = read_data(shader_path);
+    const char* glsl_source = read_data(shader_path,  NULL);
     GLuint shader = glCreateShader(shader_type);
     glShaderSource(shader, 1, &glsl_source, NULL);
     glCompileShader(shader);
     check_shader_compilation_status(shader);
-    free(glsl_source);
+    free((char*)glsl_source);
     return shader;
 }
 

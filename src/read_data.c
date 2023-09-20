@@ -1,55 +1,31 @@
 #include "read_data.h"
 
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <fcntl.h>
+#include "SDL.h"
 
-char *read_data(char *file)
+// Source: OpenGL WikiBook https://gitlab.com/wikibooks-opengl/modern-tutorials/blob/master/common-sdl2/shader_utils.cpp
+char* read_data(const char* filename, int* size)
 {
-	int fd = -1;
-	char *buff = NULL;
-	char *dup = NULL;
-	int buffLength;
-	int i;
-	char tmp = 0;
-	int reat;
+    SDL_RWops *rw = SDL_RWFromFile(filename, "rb");
+    if (rw == NULL) return NULL;
 
-	fd = open(file, O_RDONLY);
-	if (fd == -1)
-		return NULL;
-	buffLength = 500;
-	buff = malloc(sizeof(char) * buffLength);
-	if (buff == NULL)
-	{
-		close(fd);
-		return NULL;
-	}
-	i = 0;
-	reat = read(fd, &tmp, 1);
+    Sint64 res_size = SDL_RWsize(rw);
+    char* res = (char*)malloc(res_size + 1);
 
-	while (reat > 0)
-	{
-		buff[i] = tmp;
-		i++;
-		if (i == buffLength-1)
-		{
-			buffLength += 500;
-			buff = realloc(buff, buffLength);
-			if (buff == NULL)
-			{
-				close(fd);
-				return NULL;
-			}
-		}
-		reat = read(fd, &tmp, 1);
-	}
-	if (reat >= 0)
-	{
-		buff[i] = '\0';
-		dup = strdup(buff);
-	}
-	free(buff);
-	close(fd);
-	return dup;
+    size_t nb_read_total = 0, nb_read = 1;
+    char* buf = res;
+    while (nb_read_total < res_size && nb_read != 0) {
+        nb_read = SDL_RWread(rw, buf, 1, (res_size - nb_read_total));
+        nb_read_total += nb_read;
+        buf += nb_read;
+    }
+    SDL_RWclose(rw);
+    if (nb_read_total != res_size) {
+        free(res);
+        return NULL;
+    }
+
+    res[nb_read_total] = '\0';
+    if (size != NULL)
+        *size = nb_read_total;
+    return res;
 }

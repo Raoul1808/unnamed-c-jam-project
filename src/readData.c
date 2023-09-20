@@ -5,7 +5,7 @@
 
 char *readData(char *file)
 {
-	int fd=-1;
+	int fd = -1;
 	char *buff = NULL;
 	char *dup = NULL;
 	int buffLength;
@@ -18,8 +18,12 @@ char *readData(char *file)
 		return NULL;
 	buffLength = 500;
 	buff = malloc(sizeof(char) * buffLength);
+	if (buff == NULL)
+	{
+		close(fd);
+		return NULL;
+	}
 	i = 0;
-
 	reat = read(fd, &tmp, 1);
 
 	while (reat > 0)
@@ -31,7 +35,10 @@ char *readData(char *file)
 			buffLength += 500;
 			buff = realloc(buff, buffLength);
 			if (buff == NULL)
-				break;
+			{
+				close(fd);
+				return NULL;
+			}
 		}
 		reat = read(fd, &tmp, 1);
 	}
@@ -40,10 +47,7 @@ char *readData(char *file)
 		buff[i] = '\0';
 		dup = strdup(buff);
 	}
-	F_READDATA_END:
-	if (buff != NULL)
-		free(buff);
-	if (fd != -1)
-		close(fd);
+	free(buff);
+	close(fd);
 	return dup;
 }

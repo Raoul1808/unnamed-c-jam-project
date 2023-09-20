@@ -21,6 +21,18 @@ void check_shader_compilation_status(GLuint shader)
         printf("Shader compiled successfully\n");
 }
 
+GLuint create_shader(char* shader_path, GLenum shader_type)
+{
+    // TODO: ugly warnings over here
+    char* glsl_source = read_data(shader_path);
+    GLuint shader = glCreateShader(shader_type);
+    glShaderSource(shader, 1, &glsl_source, NULL);
+    glCompileShader(shader);
+    check_shader_compilation_status(shader);
+    free(glsl_source);
+    return shader;
+}
+
 int main(void)
 {
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
@@ -104,20 +116,8 @@ int main(void)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img->w, img->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img->data);
     free_image(img);
 
-    // TODO: ugly warnings over here
-    char* glsl_vertex_source = read_data("res/default.vert");
-    GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex_shader, 1, &glsl_vertex_source, NULL);
-    glCompileShader(vertex_shader);
-    check_shader_compilation_status(vertex_shader);
-    free(glsl_vertex_source);
-
-    char* glsl_fragment_source = read_data("res/default.frag");
-    GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment_shader, 1, &glsl_fragment_source, NULL);
-    glCompileShader(fragment_shader);
-    check_shader_compilation_status(fragment_shader);
-    free(glsl_fragment_source);
+    GLuint vertex_shader = create_shader("res/default.vert", GL_VERTEX_SHADER);
+    GLuint fragment_shader = create_shader("res/default.frag", GL_FRAGMENT_SHADER);
 
     GLuint program = glCreateProgram();
     glAttachShader(program, vertex_shader);

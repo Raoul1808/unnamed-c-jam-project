@@ -15,7 +15,7 @@ char *readData(char *file)
 
 	fd = open(file, O_RDONLY);
 	if (fd == -1)
-		goto F_READDATA_END;
+		return NULL;
 	buffLength = 500;
 	buff = malloc(sizeof(char) * buffLength);
 	i = 0;
@@ -31,14 +31,15 @@ char *readData(char *file)
 			buffLength += 500;
 			buff = realloc(buff, buffLength);
 			if (buff == NULL)
-				goto F_READDATA_END;
+				break;
 		}
 		reat = read(fd, &tmp, 1);
 	}
-	if (reat < 0)
-		goto F_READDATA_END;
-	buff[i] = '\0';
-	dup = strdup(buff);
+	if (reat >= 0)
+	{
+		buff[i] = '\0';
+		dup = strdup(buff);
+	}
 	F_READDATA_END:
 	if (buff != NULL)
 		free(buff);

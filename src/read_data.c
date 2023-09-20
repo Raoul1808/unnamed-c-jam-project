@@ -1,9 +1,11 @@
+#include "read_data.h"
+
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
 
-char *readData(char *file)
+char *read_data(char *file)
 {
 	int fd = -1;
 	char *buff = NULL;

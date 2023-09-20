@@ -4,36 +4,7 @@
 #include "glad/glad.h"
 
 #include "image.h"
-
-const char* glsl_vertex_source = R"glsl(
-#version 330
-
-in vec2 position;
-in vec2 vTexCoords;
-
-out vec2 fTexCoords;
-
-void main()
-{
-    fTexCoords = vTexCoords;
-    gl_Position = vec4(position, 0.0, 1.0);
-}
-)glsl";
-
-const char* glsl_fragment_source = R"glsl(
-#version 330
-
-in vec2 fTexCoords;
-
-out vec4 fragColor;
-
-uniform sampler2D tex;
-
-void main()
-{
-    fragColor = texture(tex, fTexCoords) * vec4(1.0, 0.0, 0.0, 1.0);
-}
-)glsl";
+#include "read_data.h"
 
 void check_shader_compilation_status(GLuint shader)
 {
@@ -133,15 +104,20 @@ int main(void)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img->w, img->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img->data);
     free_image(img);
 
+    // TODO: ugly warnings over here
+    char* glsl_vertex_source = read_data("res/default.vert");
     GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex_shader, 1, &glsl_vertex_source, NULL);
     glCompileShader(vertex_shader);
     check_shader_compilation_status(vertex_shader);
+    free(glsl_vertex_source);
 
+    char* glsl_fragment_source = read_data("res/default.frag");
     GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragment_shader, 1, &glsl_fragment_source, NULL);
     glCompileShader(fragment_shader);
     check_shader_compilation_status(fragment_shader);
+    free(glsl_fragment_source);
 
     GLuint program = glCreateProgram();
     glAttachShader(program, vertex_shader);

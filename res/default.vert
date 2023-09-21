@@ -5,8 +5,10 @@ in vec2 vTexCoords;
 
 out vec2 fTexCoords;
 
+uniform mat4 projection;
+
 void main()
 {
     fTexCoords = vTexCoords;
-    gl_Position = vec4(position, 1.0, 1.0);
+    gl_Position = projection * vec4(position, 0.0, 1.0);
 }

@@ -1,5 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include "matrix.h"
 
 void	mat_add(mat4_t mat1, mat4_t mat2, mat4_t *res)
@@ -10,7 +8,7 @@ void	mat_add(mat4_t mat1, mat4_t mat2, mat4_t *res)
 
 void	mat_mul(mat4_t mat1, mat4_t mat2, mat4_t *res)
 {
-        for (int i = 0; i < 16; i++)
+    for (int i = 0; i < 16; i++)
 	{
 		res[0][i] = 0;
 		for (int j = 0; j < 4; j++)

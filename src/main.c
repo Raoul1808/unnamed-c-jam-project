@@ -174,9 +174,9 @@ int main(void)
                 0, 0, 0, 1,
         };
 
-        mat4_t* proj_mat = mat_mul(cam_mat, rot_mat);
-        glUniformMatrix4fv(projection_uniform_location, 1, GL_TRUE, *proj_mat);
-        free(proj_mat);
+        mat4_t proj_mat;
+	mat_mul(cam_mat, rot_mat, &proj_mat);
+        glUniformMatrix4fv(projection_uniform_location, 1, GL_TRUE, proj_mat);
 
         glClearColor(0.1f, 0.4f, 0.9f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);

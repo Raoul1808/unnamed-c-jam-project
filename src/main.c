@@ -164,6 +164,20 @@ int main(void)
             }
         }
 
+        float theta = sin(SDL_GetTicks() / 1000.0f);
+        float sin_theta = sin(theta);
+        float cos_theta = cos(theta);
+        mat4_t rot_mat = {
+                cos_theta, -sin_theta, 0, 0,
+                sin_theta, cos_theta, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1,
+        };
+
+        mat4_t* proj_mat = mat_mul(cam_mat, rot_mat);
+        glUniformMatrix4fv(projection_uniform_location, 1, GL_TRUE, *proj_mat);
+        free(proj_mat);
+
         glClearColor(0.1f, 0.4f, 0.9f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 

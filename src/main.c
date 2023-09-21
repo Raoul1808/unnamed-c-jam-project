@@ -4,6 +4,7 @@
 #include "glad/glad.h"
 
 #include "image.h"
+#include "matrix.h"
 #include "read_data.h"
 
 void check_shader_compilation_status(GLuint shader)
@@ -80,10 +81,10 @@ int main(void)
     glBindVertexArray(vao);
 
     float vertices[] = {
-            -0.5f, 0.5f, 0.0f, 0.0f, // Top left
-            0.5f, 0.5f, 1.0f, 0.0f, // Top right
-            0.5f, -0.5f, 1.0f, 1.0f, // Bottom right
-            -0.5f, -0.5f, 0.0f, 1.0f, // Bottom left
+            100.0f, 400.0f, 0.0f, 1.0f, // Top left
+            400.0f, 400.0f, 1.0f, 1.0f, // Top right
+            400.0f, 100.0f, 1.0f, 0.0f, // Bottom right
+            100.0f, 100.0f, 0.0f, 0.0f, // Bottom left
     };
 
     unsigned int indices[] = {
@@ -134,6 +135,22 @@ int main(void)
     glEnableVertexAttribArray(texcoord_attrib_location);
     glVertexAttribPointer(texcoord_attrib_location, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, (void*)(sizeof(float) * 2));
 
+    float view_left = 0.0f;
+    float view_right = 1280.0f;
+    float view_top = 0.0f;
+    float view_bottom = 720.0f;
+    float far_clip = 1.0f;
+    float near_clip = -1.0f;
+    mat4_t cam_mat = {
+            2 / (view_right - view_left), 0, 0, -(view_right + view_left) / (view_right - view_left),
+            0, 2 / (view_top - view_bottom), 0, -(view_top + view_bottom) / (view_top - view_bottom),
+            0, 0, -2 / (far_clip - near_clip), -(far_clip + near_clip) / (far_clip - near_clip),
+            0, 0, 0, 1,
+    };
+
+    GLint projection_uniform_location = glGetUniformLocation(program, "projection");
+    glUniformMatrix4fv(projection_uniform_location, 1, GL_TRUE, cam_mat);
+
     unsigned char running = 1;
     SDL_Event event;
     while (running)
@@ -147,7 +164,29 @@ int main(void)
             }
         }
 
-        glClearColor(0.1f, 0.5f, 0.9f, 1.0f);
+        float theta = sin(SDL_GetTicks() / 1000.0f);
+        float sin_theta = sin(theta);
+        float cos_theta = cos(theta);
+        mat4_t rot_mat = {
+                cos_theta, -sin_theta, 0, 0,
+                sin_theta, cos_theta, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1,
+        };
+
+        mat4_t scale_mat = {
+                cos_theta, 0, 0, 0,
+                0, sin_theta, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1,
+        };
+
+        mat4_t proj_mat, proj_mat2;
+        mat_mul(cam_mat, rot_mat, &proj_mat);
+        mat_mul(proj_mat, scale_mat, &proj_mat2);
+        glUniformMatrix4fv(projection_uniform_location, 1, GL_TRUE, proj_mat2);
+
+        glClearColor(0.1f, 0.4f, 0.9f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);

@@ -1,8 +1,10 @@
 #version 330 core
 
-in vec2 position;
+in vec3 vPosition;
+in vec4 vColor;
 in vec2 vTexCoords;
 
+out vec4 fColor;
 out vec2 fTexCoords;
 
 uniform mat4 projection;
@@ -10,5 +12,6 @@ uniform mat4 projection;
 void main()
 {
     fTexCoords = vTexCoords;
-    gl_Position = projection * vec4(position, 0.0, 1.0);
+    fColor = vColor;
+    gl_Position = projection * vec4(vPosition, 1.0);
 }

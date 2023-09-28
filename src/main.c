@@ -6,7 +6,7 @@
 #include "matrix.h"
 #include "opengl_context.h"
 
-int main(void)
+int main(int argc, char **argv)
 {
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
     {
